@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Show an error on the original request form
             requestResetBox.style.display = 'block';
             newPasswordBox.style.display = 'none';
-            errorMessage.style.display = 'block';
+            errorMessage.style.display = 'block'; 
             errorText.textContent = 'Invalid or expired reset link. Please request a new one.';
         }
     }

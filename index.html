@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reset Password</title>
   <!-- 1. Import the Supabase JavaScript Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,20 +23,21 @@
   <p id="success-message" style="color: green;"></p>
 
   <script>
-    // 2. Initialize Supabase (Use the SAME credentials as your Flutter app)
-    const supabaseUrl = 'https://reybokhaxnnqswjmxljv.supabase.co'; // Replace with your actual URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q'; // Replace with your actual anon key
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // 2. Initialize Supabase with the same credentials as your app
+    const supabaseUrl = 'https://reybokhaxnnqswjmxljv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q';
+    
+    // CORRECTED: Use a different variable name to avoid conflict
+    const supaClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     const resetForm = document.getElementById('reset-form');
     const loadingMessage = document.getElementById('loading-message');
     const errorMessage = document.getElementById('error-message');
     const successMessage = document.getElementById('success-message');
 
-    // 3. This is the crucial part: Listen for the password recovery event
-    supabase.auth.onAuthStateChange((event, session) => {
+    // 3. Listen for the password recovery event
+    supaClient.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        // If the event is correct, show the form and hide the loading text
         resetForm.style.display = 'block';
         loadingMessage.style.display = 'none';
       }
@@ -48,7 +51,7 @@
         return;
       }
       
-      const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+      const { data, error } = await supaClient.auth.updateUser({ password: newPassword });
 
       if (error) {
         errorMessage.innerText = 'Error: ' + error.message;
