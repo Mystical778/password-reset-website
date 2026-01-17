@@ -1,92 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Reset Password</title>
+  <!-- 1. Import the Supabase JavaScript Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Request Reset Page -->
-        <div class="reset-box" id="requestResetBox">
-            <h1>Reset Your Password</h1>
-            <p class="subtitle">Enter your email address and we'll send you a link to reset your password.</p>
-            
-            <form id="resetForm">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        placeholder="Enter your email" 
-                        required
-                    >
-                    <span class="error-message" id="emailError"></span>
-                </div>
 
-                <button type="submit" class="btn-primary" id="submitBtn">Send Reset Link</button>
-                
-                <div id="successMessage" class="success-message" style="display: none;">
-                    <p>✓ Password reset link has been sent to your email!</p>
-                </div>
-                
-                <div id="errorMessage" class="error-alert" style="display: none;">
-                    <p id="errorText"></p>
-                </div>
-            </form>
+  <h1>Reset Your Password</h1>
 
-            <div class="form-footer">
-                <p>Remember your password? <a href="/">Back to Login</a></p>
-            </div>
-        </div>
+  <!-- This form is hidden until the user is authenticated -->
+  <div id="reset-form" style="display: none;">
+    <p>Enter your new password below.</p>
+    <input type="password" id="password" placeholder="New Password" />
+    <button onclick="updatePassword()">Save New Password</button>
+  </div>
 
-        <!-- Reset Password Page (shown after clicking reset link) -->
-        <div class="reset-box" id="newPasswordBox" style="display: none;">
-            <h1>Create New Password</h1>
-            <p class="subtitle">Enter your new password below.</p>
-            
-            <form id="newPasswordForm">
-                <div class="form-group">
-                    <label for="password">New Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Enter new password" 
-                        required
-                    >
-                    <span class="error-message" id="passwordError"></span>
-                    <span class="password-hint">Must be at least 8 characters</span>
-                </div>
+  <p id="loading-message">Please wait, validating link...</p>
+  <p id="error-message" style="color: red;"></p>
+  <p id="success-message" style="color: green;"></p>
 
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input 
-                        type="password" 
-                        id="confirmPassword" 
-                        name="confirmPassword" 
-                        placeholder="Confirm new password" 
-                        required
-                    >
-                    <span class="error-message" id="confirmPasswordError"></span>
-                </div>
+  <script>
+    // 2. Initialize Supabase (Use the SAME credentials as your Flutter app)
+    const supabaseUrl = 'YOUR_SUPABASE_URL'; // Replace with your actual URL
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual anon key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-                <button type="submit" class="btn-primary" id="updateBtn">Update Password</button>
-                
-                <div id="updateSuccessMessage" class="success-message" style="display: none;">
-                    <p>✓ Your password has been updated successfully!</p>
-                </div>
-                
-                <div id="updateErrorMessage" class="error-alert" style="display: none;">
-                    <p id="updateErrorText"></p>
-                </div>
-            </form>
-        </div>
-    </div>
+    const resetForm = document.getElementById('reset-form');
+    const loadingMessage = document.getElementById('loading-message');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
 
-    <script src="script.js"></script>
+    // 3. This is the crucial part: Listen for the password recovery event
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // If the event is correct, show the form and hide the loading text
+        resetForm.style.display = 'block';
+        loadingMessage.style.display = 'none';
+      }
+    });
+
+    // 4. Function to handle the password update
+    async function updatePassword() {
+      const newPassword = document.getElementById('password').value;
+      if (newPassword.length < 6) {
+        errorMessage.innerText = 'Password must be at least 6 characters long.';
+        return;
+      }
+      
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        errorMessage.innerText = 'Error: ' + error.message;
+      } else {
+        resetForm.style.display = 'none';
+        successMessage.innerText = 'Success! Your password has been updated. You can now close this window and log in on your mobile app.';
+      }
+    }
+  </script>
+
 </body>
 </html>
