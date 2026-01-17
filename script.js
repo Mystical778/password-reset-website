@@ -201,14 +201,17 @@ newPasswordForm.addEventListener('submit', async function(e) {
 });
 
 // ============================================================================
-// CHECK FOR PASSWORD RESET RECOVERY LINK
+// CHECK FOR PASSWORD RESET RECOVERY LINK (CORRECTED)
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async function() {
-    // Check if user is coming from a password reset link
-    const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get('type');
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
+    // Supabase puts the tokens in the URL hash, not the search parameters.
+    // We need to parse the hash manually.
+    const hash = window.location.hash.substring(1); // Remove the '#'
+    const params = new URLSearchParams(hash);
+    
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
 
     if (type === 'recovery' && accessToken && refreshToken) {
         try {
@@ -222,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 throw error;
             }
 
-            // Show the new password form
+            // Show the new password form and hide the old one
             requestResetBox.style.display = 'none';
             newPasswordBox.style.display = 'block';
 
@@ -231,6 +234,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             
         } catch (error) {
             console.error('Error validating reset link:', error.message);
+            // Show an error on the original request form
+            requestResetBox.style.display = 'block';
+            newPasswordBox.style.display = 'none';
             errorMessage.style.display = 'block';
             errorText.textContent = 'Invalid or expired reset link. Please request a new one.';
         }
