@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+  <script>
+    // Parse URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("access_token");
+
+    if (!token) {
+      document.body.innerText = "Invalid or expired link.";
+    } else {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Redirect to Flutter app deep link
+        window.location.href = `com.chan.auth://password-reset?access_token=${token}`;
+      } else {
+        // Redirect to website reset password page
+        window.location.href = `reset-password.html?access_token=${token}`;
+      }
+    }
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
