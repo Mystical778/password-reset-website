@@ -22,57 +22,48 @@
   <p id="error-message" style="color: red;"></p>
   <p id="success-message" style="color: green;"></p>
 
-  <script>
-  const supabaseUrl = 'https://reybokhaxnnqswjmxljv.supabase.co'
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q'
-  const supaClient = supabase.createClient(supabaseUrl, supabaseKey)
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
 
-  const resetForm = document.getElementById('reset-form')
-  const loadingMessage = document.getElementById('loading-message')
-  const errorMessage = document.getElementById('error-message')
-  const successMessage = document.getElementById('success-message')
+  const supabaseUrl = "https://reybokhaxnnqswjmxljv.supabase.co"
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q"
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
-  // ✅ FORCE Supabase to read the recovery token from URL
-  async function initRecovery() {
-    const { data, error } = await supaClient.auth.getSession()
+  const resetForm = document.getElementById("reset-form")
+  const loadingMessage = document.getElementById("loading-message")
+  const errorMessage = document.getElementById("error-message")
+  const successMessage = document.getElementById("success-message")
 
-    if (error) {
-      loadingMessage.style.display = 'none'
-      errorMessage.innerText = 'Invalid or expired reset link.'
-    }
-  }
-
-  initRecovery()
-
-  // ✅ Listen for PASSWORD_RECOVERY
-  supaClient.auth.onAuthStateChange((event) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      resetForm.style.display = 'block'
-      loadingMessage.style.display = 'none'
-    }
-  })
-
-  async function updatePassword() {
-    const newPassword = document.getElementById('password').value
+  // IMPORTANT: expose function to global scope for button
+  window.updatePassword = async () => {
+    const newPassword = document.getElementById("password").value
 
     if (newPassword.length < 6) {
-      errorMessage.innerText = 'Password must be at least 6 characters long.'
+      errorMessage.innerText = "Password must be at least 6 characters"
       return
     }
 
-    const { error } = await supaClient.auth.updateUser({
-      password: newPassword
-    })
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
 
     if (error) {
       errorMessage.innerText = error.message
     } else {
-      resetForm.style.display = 'none'
-      successMessage.innerText =
-        'Success! Your password has been updated. You may now close this page.'
+      resetForm.style.display = "none"
+      successMessage.innerText = "Password updated successfully"
     }
   }
+
+  // Force Supabase to process recovery token
+  await supabase.auth.getSession()
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      resetForm.style.display = "block"
+      loadingMessage.style.display = "none"
+    }
+  })
 </script>
+
 
 </body>
 </html>
