@@ -1,69 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reset Password</title>
-  <!-- 1. Import the Supabase JavaScript Library -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
   <h1>Reset Your Password</h1>
 
-  <!-- This form is hidden until the user is authenticated -->
-  <div id="reset-form" style="display: none;">
+  <div id="reset-form" style="display:none">
     <p>Enter your new password below.</p>
     <input type="password" id="password" placeholder="New Password" />
-    <button onclick="updatePassword()">Save New Password</button>
+    <button id="save-btn">Save New Password</button>
   </div>
 
   <p id="loading-message">Please wait, validating link...</p>
-  <p id="error-message" style="color: red;"></p>
-  <p id="success-message" style="color: green;"></p>
+  <p id="error-message" style="color:red"></p>
+  <p id="success-message" style="color:green"></p>
 
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+  <!-- ✅ SUPABASE V2 MUST BE MODULE -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
 
-  const supabaseUrl = "https://reybokhaxnnqswjmxljv.supabase.co"
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q"
-  const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseUrl = "https://reybokhaxnnqswjmxljv.supabase.co"
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q"
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-  const resetForm = document.getElementById("reset-form")
-  const loadingMessage = document.getElementById("loading-message")
-  const errorMessage = document.getElementById("error-message")
-  const successMessage = document.getElementById("success-message")
+    const resetForm = document.getElementById("reset-form")
+    const loadingMessage = document.getElementById("loading-message")
+    const errorMessage = document.getElementById("error-message")
+    const successMessage = document.getElementById("success-message")
+    const saveBtn = document.getElementById("save-btn")
 
-  // IMPORTANT: expose function to global scope for button
-  window.updatePassword = async () => {
-    const newPassword = document.getElementById("password").value
+    // 🔑 Force Supabase to process the recovery token
+    await supabase.auth.getSession()
 
-    if (newPassword.length < 6) {
-      errorMessage.innerText = "Password must be at least 6 characters"
-      return
-    }
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        resetForm.style.display = "block"
+        loadingMessage.style.display = "none"
+      }
+    })
 
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    saveBtn.addEventListener("click", async () => {
+      const newPassword = document.getElementById("password").value
 
-    if (error) {
-      errorMessage.innerText = error.message
-    } else {
-      resetForm.style.display = "none"
-      successMessage.innerText = "Password updated successfully"
-    }
-  }
+      if (newPassword.length < 6) {
+        errorMessage.innerText = "Password must be at least 6 characters"
+        return
+      }
 
-  // Force Supabase to process recovery token
-  await supabase.auth.getSession()
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
 
-  supabase.auth.onAuthStateChange((event) => {
-    if (event === "PASSWORD_RECOVERY") {
-      resetForm.style.display = "block"
-      loadingMessage.style.display = "none"
-    }
-  })
-</script>
-
+      if (error) {
+        errorMessage.innerText = error.message
+      } else {
+        resetForm.style.display = "none"
+        successMessage.innerText =
+          "Success! Your password has been updated."
+      }
+    })
+  </script>
 
 </body>
 </html>
