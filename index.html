@@ -23,44 +23,56 @@
   <p id="success-message" style="color: green;"></p>
 
   <script>
-    // 2. Initialize Supabase with the same credentials as your app
-    const supabaseUrl = 'https://reybokhaxnnqswjmxljv.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q';
-    
-    // CORRECTED: Use a different variable name to avoid conflict
-    const supaClient = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl = 'https://reybokhaxnnqswjmxljv.supabase.co'
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleWJva2hheG5ucXN3am14bGp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTQ1NzYsImV4cCI6MjA3OTgzMDU3Nn0.i94MvCxm1IQLJIE9W3tC3OTYsn97mytjcC9yErl953Q'
+  const supaClient = supabase.createClient(supabaseUrl, supabaseKey)
 
-    const resetForm = document.getElementById('reset-form');
-    const loadingMessage = document.getElementById('loading-message');
-    const errorMessage = document.getElementById('error-message');
-    const successMessage = document.getElementById('success-message');
+  const resetForm = document.getElementById('reset-form')
+  const loadingMessage = document.getElementById('loading-message')
+  const errorMessage = document.getElementById('error-message')
+  const successMessage = document.getElementById('success-message')
 
-    // 3. Listen for the password recovery event
-    supaClient.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        resetForm.style.display = 'block';
-        loadingMessage.style.display = 'none';
-      }
-    });
+  // ✅ FORCE Supabase to read the recovery token from URL
+  async function initRecovery() {
+    const { data, error } = await supaClient.auth.getSession()
 
-    // 4. Function to handle the password update
-    async function updatePassword() {
-      const newPassword = document.getElementById('password').value;
-      if (newPassword.length < 6) {
-        errorMessage.innerText = 'Password must be at least 6 characters long.';
-        return;
-      }
-      
-      const { data, error } = await supaClient.auth.updateUser({ password: newPassword });
-
-      if (error) {
-        errorMessage.innerText = 'Error: ' + error.message;
-      } else {
-        resetForm.style.display = 'none';
-        successMessage.innerText = 'Success! Your password has been updated. You can now close this window and log in on your mobile app.';
-      }
+    if (error) {
+      loadingMessage.style.display = 'none'
+      errorMessage.innerText = 'Invalid or expired reset link.'
     }
-  </script>
+  }
+
+  initRecovery()
+
+  // ✅ Listen for PASSWORD_RECOVERY
+  supaClient.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      resetForm.style.display = 'block'
+      loadingMessage.style.display = 'none'
+    }
+  })
+
+  async function updatePassword() {
+    const newPassword = document.getElementById('password').value
+
+    if (newPassword.length < 6) {
+      errorMessage.innerText = 'Password must be at least 6 characters long.'
+      return
+    }
+
+    const { error } = await supaClient.auth.updateUser({
+      password: newPassword
+    })
+
+    if (error) {
+      errorMessage.innerText = error.message
+    } else {
+      resetForm.style.display = 'none'
+      successMessage.innerText =
+        'Success! Your password has been updated. You may now close this page.'
+    }
+  }
+</script>
 
 </body>
 </html>
